@@ -95,23 +95,42 @@ the .data segments as the MARS simulator, apart from that
 everything else should match. 
 
 ##  The instruction included in the assembler are:
-  1.   Li 
-  2.   Ble 
-  3.   La 
-  4.   Jal 
-  5.   J 
-  6.   Addi 
-  7.   Or 
-  8.   Andi 
-  9.   Bne 
-  10.  Srl 
-  11.  Beq 
-  12.  Sub 
-  13.  Sllv 
-  14.  Jr 
-  15.  And 
-  16.  Sll 
-  17.  Lw 
-  18.  Sw 
-  19.  Slt 
-  20.  Syscall 
+  ### R-Type Instructions (Register-based operations)
+
+| Instruction | Opcode (6 bits) | rs (5 bits) | rt (5 bits) | rd (5 bits) | shamt (5 bits) | funct (6 bits) | Description                                             |
+|-------------|-----------------|-------------|-------------|------------|----------------|----------------|---------------------------------------------------------|
+| **and**     | 000000         | rs          | rt          | rd         | 00000          | 100100         | Bitwise AND (`rd = rs & rt`)                            |
+| **or**      | 000000         | rs          | rt          | rd         | 00000          | 100101         | Bitwise OR (`rd = rs \| rt`)                            |
+| **sub**     | 000000         | rs          | rt          | rd         | 00000          | 100010         | Subtract (`rd = rs - rt`)                               |
+| **sll**     | 000000         | 00000       | rt          | rd         | shamt          | 000000         | Shift Left Logical (`rd = rt << shamt`)                |
+| **sllv**    | 000000         | rs          | rt          | rd         | 00000          | 000100         | Shift Left Logical Variable (`rd = rt << rs`)          |
+| **srl**     | 000000         | 00000       | rt          | rd         | shamt          | 000010         | Shift Right Logical (`rd = rt >> shamt`)               |
+| **slt**     | 000000         | rs          | rt          | rd         | 00000          | 101010         | Set on Less Than (`rd = 1 if rs < rt else 0`)           |
+| **jr**      | 000000         | rs          | 00000       | 00000      | 00000          | 001000         | Jump Register (PC ← rs)                                 |
+| **syscall** | 000000         | (unused)    | (unused)    | (unused)   | 00000          | 001100         | System call                                             |
+
+---
+
+### I-Type Instructions (Immediate-based operations)
+
+| Instruction  | Opcode (6 bits) | rs (5 bits) | rt (5 bits) | Immediate (16 bits) | Description                                                        |
+|--------------|-----------------|-------------|-------------|----------------------|--------------------------------------------------------------------|
+| **addi**     | 001000         | rs          | rt          | imm                 | Add Immediate (`rt = rs + imm`)                                    |
+| **andi**     | 001100         | rs          | rt          | imm                 | Bitwise AND Immediate (`rt = rs & imm`)                            |
+| **beq**      | 000100         | rs          | rt          | offset              | Branch if Equal (if rs == rt then PC ← PC + (offset << 2))         |
+| **bne**      | 000101         | rs          | rt          | offset              | Branch if Not Equal (if rs != rt then PC ← PC + (offset << 2))     |
+| **lw**       | 100011         | base        | rt          | offset              | Load Word (`rt = MEM[base + offset]`)                              |
+| **sw**       | 101011         | base        | rt          | offset              | Store Word (`MEM[base + offset] = rt`)                             |
+| **ble** (pseudo) | -         | -           | -           | -                    | Branch if Less or Equal (pseudo-instruction, expands to other ops) |
+| **la** (pseudo)  | -         | -           | -           | -                    | Load Address (pseudo-instruction)                                  |
+| **li** (pseudo)  | -         | -           | -           | -                    | Load Immediate (pseudo-instruction)                                |
+
+---
+
+### J-Type Instructions (Jump-based operations)
+
+| Instruction | Opcode (6 bits) | Target (26 bits) | Description                                                               |
+|-------------|-----------------|------------------|---------------------------------------------------------------------------|
+| **j**       | 000010         | target           | Jump (PC[31..28] stays same, PC[27..2] = target, PC[1..0] = 0)            |
+| **jal**     | 000011         | target           | Jump and Link (`$ra = PC + 4` then jump to target)                        |
+
